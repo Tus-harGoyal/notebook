@@ -25,7 +25,6 @@
     --soft-red: #f5e0dc;
     --border: #e0d6c8;
     --accent: #b5987a;
-    --shadow: rgba(100,80,60,0.08);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--main-text); min-height: 100vh; min-height: -webkit-fill-available; }
@@ -33,10 +32,8 @@
   .view.active { display: block; }
 
   header {
-    background: var(--warm-white);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    display: flex; align-items: center; justify-content: space-between;
+    background: var(--warm-white); border-bottom: 1px solid var(--border);
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 10;
   }
   .date-block h1 { font-family: 'Lora', serif; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.3px; }
@@ -58,20 +55,47 @@
   main { max-width: 560px; margin: 0 auto; padding: 28px 18px 100px; }
   .section-label { font-family: 'Lora', serif; font-style: italic; font-size: 0.85rem; color: var(--muted-text); margin-bottom: 14px; }
 
-  .task-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 24px; }
+  /* TASK ITEM */
+  .task-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
+
+  .task-block { display: flex; flex-direction: column; }
+
   .task-item {
     background: var(--warm-white); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 14px; display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 14px; display: flex; align-items: flex-start; justify-content: space-between;
     gap: 12px; cursor: pointer; transition: all 0.2s ease; user-select: none;
   }
   .task-item:active { transform: scale(0.99); }
   .task-item.done { background: var(--done-green); border-color: var(--done-green-border); }
   .task-item.done .task-text { color: var(--done-green-text); text-decoration: line-through; text-decoration-color: var(--done-green-border); }
+  .task-item.has-stack { border-radius: 10px 10px 4px 4px; }
+
   .task-text { font-size: 0.9rem; line-height: 1.5; flex: 1; }
+  .task-meta { font-size: 0.72rem; color: var(--muted-text); margin-top: 3px; }
+
+  /* STACK SUB-ITEMS */
+  .stack-children { display: flex; flex-direction: column; gap: 2px; }
+
+  .stack-child {
+    background: #f0f5f9;
+    border: 1px solid #c8dcea;
+    border-top: none;
+    border-radius: 0;
+    padding: 9px 14px 9px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; cursor: pointer; transition: all 0.2s ease; user-select: none;
+  }
+  .stack-child:last-child { border-radius: 0 0 10px 10px; }
+  .stack-child.done { background: #e8f5ea; border-color: #b8dfc0; }
+  .stack-child.done .stack-child-text { color: var(--done-green-text); text-decoration: line-through; text-decoration-color: #9dca9d; }
+  .stack-child-text { font-size: 0.85rem; line-height: 1.4; color: #3a5a72; flex: 1; }
+  .stack-child-text::before { content: 'also '; font-style: italic; color: #8aabbf; }
+  .stack-child.done .stack-child-text::before { color: #9dca9d; }
+
   .bin-btn {
-    background: none; border: none; cursor: pointer; padding: 6px 8px;
-    border-radius: 6px; color: var(--muted-text); font-size: 0.9rem;
-    transition: all 0.15s; flex-shrink: 0; opacity: 0.45;
+    background: none; border: none; cursor: pointer; padding: 4px 6px;
+    border-radius: 6px; color: var(--muted-text); font-size: 0.85rem;
+    transition: all 0.15s; flex-shrink: 0; opacity: 0.4;
   }
   .bin-btn:active { background: var(--soft-red); color: #c0504d; opacity: 1; }
 
@@ -87,16 +111,16 @@
   .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(60,45,30,0.28); backdrop-filter: blur(4px);
-    z-index: 100; align-items: flex-end; justify-content: center; padding: 0;
+    z-index: 100; align-items: flex-end; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal {
     background: var(--warm-white); border-radius: 20px 20px 0 0;
-    padding: 28px 24px 36px; width: 100%; max-width: 560px;
+    padding: 28px 24px 40px; width: 100%; max-width: 560px;
     box-shadow: 0 -8px 40px rgba(80,60,40,0.15);
-    animation: slideUp 0.22s ease;
+    animation: slideUp 0.22s ease; max-height: 90vh; overflow-y: auto;
   }
-  @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
   .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
   .modal h2 { font-family: 'Lora', serif; font-size: 1.05rem; margin-bottom: 18px; }
   .field { margin-bottom: 14px; }
@@ -107,12 +131,26 @@
     color: var(--main-text); outline: none; transition: border 0.15s;
   }
   .field input:focus { border-color: var(--accent); }
+  .time-hint { font-size: 0.72rem; color: var(--muted-text); margin-top: 5px; }
+  .time-detected { font-size: 0.78rem; color: #3a7a4a; margin-top: 5px; font-weight: 500; }
+
   .preview-text {
     background: var(--soft-sage); border-radius: 10px; padding: 12px 14px;
     font-size: 0.88rem; color: #3a5a2a; font-style: italic; margin-bottom: 16px;
     min-height: 46px; line-height: 1.5;
   }
   .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* STACK PICKER */
+  .stack-section-label { font-size: 0.75rem; font-weight: 500; color: var(--muted-text); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stack-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; max-height: 180px; overflow-y: auto; }
+  .stack-option {
+    padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--cream); cursor: pointer; font-size: 0.88rem; line-height: 1.4;
+    transition: all 0.15s; color: var(--main-text);
+  }
+  .stack-option:active { transform: scale(0.98); }
+  .stack-option.selected { background: #ddeaf5; border-color: #a8c4dc; color: #2a5a7a; font-weight: 500; }
 
   /* CALENDAR */
   .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
@@ -138,7 +176,6 @@
 
   .backup-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
-  /* TOAST */
   .toast {
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: #3d3530; color: #fff; padding: 10px 20px; border-radius: 20px;
@@ -162,7 +199,6 @@
     </div>
   </header>
 
-  <!-- SETTINGS DRAWER -->
   <div id="settingsDrawer" style="display:none; background:#fff9f3; border-bottom:1px solid var(--border); padding:16px 20px;">
     <div style="max-width:560px; margin:0 auto;">
       <p style="font-family:'Lora',serif; font-style:italic; font-size:0.82rem; color:var(--muted-text); margin-bottom:12px;">backup & restore — only needed if you switch phones</p>
@@ -179,6 +215,7 @@
     <div class="task-list" id="taskList"></div>
     <div class="bottom-actions">
       <button class="btn primary" onclick="openAddModal(null)">+ Add activity</button>
+      <button class="btn" onclick="openStackModal(null)">⊕ Stack</button>
       <button class="btn" onclick="repeatTomorrow()">↻ Repeat tomorrow</button>
     </div>
   </main>
@@ -211,7 +248,7 @@
 </div>
 
 <!-- ADD MODAL -->
-<div class="modal-overlay" id="addModal" onclick="handleOverlayClick(event)">
+<div class="modal-overlay" id="addModal" onclick="handleOverlayClick(event,'addModal')">
   <div class="modal">
     <div class="modal-handle"></div>
     <h2>New activity</h2>
@@ -220,8 +257,10 @@
       <input type="text" id="inp_activity" placeholder="e.g. boil and drink hot water" oninput="updatePreview()">
     </div>
     <div class="field">
-      <label>Time</label>
-      <input type="text" id="inp_time" placeholder="e.g. 8 am" oninput="updatePreview()">
+      <label>Time <span style="font-size:0.7rem;color:var(--muted-text);text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+      <input type="text" id="inp_time" placeholder="e.g. 8am, 8:30 am, 9pm…" oninput="onTimeInput()">
+      <div class="time-hint" id="timeHint">Type freely — 8am, 8:30am, 9:00, 21:00 all work</div>
+      <div class="time-detected" id="timeDetected" style="display:none"></div>
     </div>
     <div class="field">
       <label>Location</label>
@@ -229,8 +268,31 @@
     </div>
     <div class="preview-text" id="addPreview">Your intention will appear here…</div>
     <div class="modal-btns">
-      <button class="btn" onclick="closeAddModal()">Cancel</button>
+      <button class="btn" onclick="closeModal('addModal')">Cancel</button>
       <button class="btn primary" onclick="confirmAdd()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- STACK MODAL -->
+<div class="modal-overlay" id="stackModal" onclick="handleOverlayClick(event,'stackModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Stack an activity</h2>
+    <div class="field">
+      <label>New activity / behaviour</label>
+      <input type="text" id="stk_activity" placeholder="e.g. drink a glass of water" oninput="updateStackPreview()">
+    </div>
+    <div class="field">
+      <label>Location <span style="font-size:0.7rem;color:var(--muted-text);text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+      <input type="text" id="stk_location" placeholder="e.g. in the kitchen" oninput="updateStackPreview()">
+    </div>
+    <p class="stack-section-label" style="margin-top:2px;">Stack onto which activity?</p>
+    <div class="stack-list" id="stackPickerList"></div>
+    <div class="preview-text" id="stackPreview">Preview will appear here…</div>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal('stackModal')">Cancel</button>
+      <button class="btn primary" onclick="confirmStack()">Add</button>
     </div>
   </div>
 </div>
@@ -239,56 +301,38 @@
 
 <script>
 // ===== STORAGE =====
-// Primary: IndexedDB (most reliable, survives browser clears better than localStorage)
-// Fallback: localStorage
-
 let tasks = {};
 let DB = null;
 
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open('PocketNotebook', 1);
-    req.onupgradeneeded = e => {
-      e.target.result.createObjectStore('data', { keyPath: 'id' });
-    };
+    req.onupgradeneeded = e => e.target.result.createObjectStore('data', { keyPath: 'id' });
     req.onsuccess = e => { DB = e.target.result; resolve(DB); };
     req.onerror = () => reject(req.error);
   });
 }
-
 async function dbGet(key) {
-  return new Promise((resolve) => {
-    const tx = DB.transaction('data', 'readonly');
+  return new Promise(resolve => {
+    const tx = DB.transaction('data','readonly');
     const req = tx.objectStore('data').get(key);
     req.onsuccess = () => resolve(req.result ? req.result.value : null);
     req.onerror = () => resolve(null);
   });
 }
-
 async function dbSet(key, value) {
-  return new Promise((resolve) => {
-    const tx = DB.transaction('data', 'readwrite');
+  return new Promise(resolve => {
+    const tx = DB.transaction('data','readwrite');
     tx.objectStore('data').put({ id: key, value });
-    tx.oncomplete = resolve;
-    tx.onerror = resolve;
+    tx.oncomplete = resolve; tx.onerror = resolve;
   });
 }
-
 async function loadTasks() {
-  try {
-    await openDB();
-    const data = await dbGet('tasks');
-    if (data) { tasks = data; return; }
-  } catch(e) {}
-  // fallback to localStorage
+  try { await openDB(); const d = await dbGet('tasks'); if (d) { tasks = d; return; } } catch(e) {}
   try { tasks = JSON.parse(localStorage.getItem('pn_tasks') || '{}'); } catch(e) { tasks = {}; }
 }
-
 async function save() {
-  try {
-    if (DB) await dbSet('tasks', tasks);
-  } catch(e) {}
-  // always also save to localStorage as double backup
+  try { if (DB) await dbSet('tasks', tasks); } catch(e) {}
   try { localStorage.setItem('pn_tasks', JSON.stringify(tasks)); } catch(e) {}
 }
 
@@ -297,23 +341,112 @@ function todayKey() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
-function getOrCreate(key) {
-  if (!tasks[key]) tasks[key] = [];
-  return tasks[key];
-}
-
+function getOrCreate(key) { if (!tasks[key]) tasks[key] = []; return tasks[key]; }
+function uid() { return Date.now().toString() + Math.floor(Math.random()*9999); }
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ===== SETTINGS =====
-function toggleSettings() {
-  const d = document.getElementById('settingsDrawer');
-  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+// ===== SMART TIME PARSER =====
+// Returns { h, m } (24h) or null
+function parseSmartTime(raw) {
+  if (!raw) return null;
+  const s = raw.trim().toLowerCase().replace(/\s+/g, '');
+
+  // Patterns to try
+  const patterns = [
+    // 8am, 8pm, 8AM
+    { re: /^(\d{1,2})(am|pm)$/, fn: m => ({ h: toH(+m[1], m[2]), m: 0 }) },
+    // 8:30am, 8:30pm
+    { re: /^(\d{1,2}):(\d{2})(am|pm)$/, fn: m => ({ h: toH(+m[1], m[3]), m: +m[2] }) },
+    // 8.30am
+    { re: /^(\d{1,2})\.(\d{2})(am|pm)$/, fn: m => ({ h: toH(+m[1], m[3]), m: +m[2] }) },
+    // 8:30 (no am/pm — treat < 7 as pm, else am)
+    { re: /^(\d{1,2}):(\d{2})$/, fn: m => ({ h: guessAmPm(+m[1]), m: +m[2] }) },
+    // 8.30
+    { re: /^(\d{1,2})\.(\d{2})$/, fn: m => ({ h: guessAmPm(+m[1]), m: +m[2] }) },
+    // 21:00 or 0800
+    { re: /^(\d{2})(\d{2})$/, fn: m => ({ h: +m[1], m: +m[2] }) },
+    // plain hour: 8, 9, 21
+    { re: /^(\d{1,2})$/, fn: m => ({ h: guessAmPm(+m[1]), m: 0 }) },
+  ];
+
+  // also handle spaced version like "8 am"
+  const sWithSpace = raw.trim().toLowerCase();
+  const spacedAm = sWithSpace.match(/^(\d{1,2})\s*(am|pm)$/);
+  if (spacedAm) return { h: toH(+spacedAm[1], spacedAm[2]), m: 0 };
+  const spacedAmMin = sWithSpace.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/);
+  if (spacedAmMin) return { h: toH(+spacedAmMin[1], spacedAmMin[3]), m: +spacedAmMin[2] };
+  const spacedAmMin2 = sWithSpace.match(/^(\d{1,2})\.(\d{2})\s*(am|pm)$/);
+  if (spacedAmMin2) return { h: toH(+spacedAmMin2[1], spacedAmMin2[3]), m: +spacedAmMin2[2] };
+
+  for (const { re, fn } of patterns) {
+    const m = s.match(re);
+    if (m) {
+      const result = fn(m);
+      if (result.h >= 0 && result.h <= 23 && result.m >= 0 && result.m <= 59) return result;
+    }
+  }
+  return null;
+}
+
+function toH(h, ampm) {
+  if (ampm === 'am') return h === 12 ? 0 : h;
+  if (ampm === 'pm') return h === 12 ? 12 : h + 12;
+  return h;
+}
+
+function guessAmPm(h) {
+  // If 1-6, assume pm (1pm-6pm more common). 7-11 assume am. 12-23 as-is
+  if (h >= 0 && h <= 6) return h + 12;
+  return h;
+}
+
+function timeToDisplay(parsed) {
+  if (!parsed) return '';
+  const { h, m } = parsed;
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+function timeToHHMM(parsed) {
+  if (!parsed) return null;
+  return `${String(parsed.h).padStart(2,'0')}:${String(parsed.m).padStart(2,'0')}`;
+}
+
+// ===== NOTIFICATIONS =====
+let notifTimers = [];
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  return (await Notification.requestPermission()) === 'granted';
+}
+
+function scheduleNotification(text, hhmmStr) {
+  if (!hhmmStr) return;
+  const [h, m] = hhmmStr.split(':').map(Number);
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  const delay = target - now;
+  if (delay <= 0) return;
+  const timer = setTimeout(async () => {
+    if (await requestNotifPermission()) {
+      new Notification('Pocket Notebook 📓', { body: text, icon: 'icon.svg' });
+    }
+  }, delay);
+  notifTimers.push(timer);
+}
+
+function rescheduleAllNotifications() {
+  notifTimers.forEach(clearTimeout); notifTimers = [];
+  (tasks[todayKey()] || []).forEach(t => {
+    if (t.notifTime && !t.done) scheduleNotification(t.text, t.notifTime);
+  });
 }
 
 // ===== CLOCK =====
@@ -323,89 +456,224 @@ function updateClock() {
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('todayDate').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
   let h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
-  const ampm = h >= 12 ? 'pm' : 'am';
-  h = h % 12 || 12;
+  const ampm = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12;
   document.getElementById('todayClock').textContent = `${h}:${m} ${ampm}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// ===== TODAY =====
-function renderToday() {
-  const key = todayKey();
+// ===== RENDER =====
+function renderList(containerEl, key) {
   const list = getOrCreate(key);
-  const el = document.getElementById('taskList');
-  el.innerHTML = '';
+  containerEl.innerHTML = '';
+
   if (!list.length) {
-    el.innerHTML = '<div class="empty-state">Nothing planned yet.<br>Add your first intention below.</div>';
+    containerEl.innerHTML = '<div class="empty-state">Nothing planned yet.<br>Add your first intention below.</div>';
     return;
   }
-  list.forEach(task => {
+
+  // Build parent tasks (non-stacked) with their stacked children
+  const parents = list.filter(t => !t.stackedOnto);
+  const orphans = list.filter(t => t.stackedOnto && !list.find(p => p.id === t.stackedOnto));
+
+  [...parents, ...orphans].forEach(parent => {
+    const children = list.filter(t => t.stackedOnto === parent.id);
+    const block = document.createElement('div');
+    block.className = 'task-block';
+
+    // Parent item
+    const hasChildren = children.length > 0;
     const div = document.createElement('div');
-    div.className = 'task-item' + (task.done ? ' done' : '');
-    div.innerHTML = `<span class="task-text">${task.text}</span><button class="bin-btn" onclick="removeTask('${key}','${task.id}',event)">🗑</button>`;
-    div.addEventListener('click', (e) => { if (!e.target.classList.contains('bin-btn')) toggleTask(key, task.id); });
-    el.appendChild(div);
+    div.className = 'task-item' + (parent.done ? ' done' : '') + (hasChildren ? ' has-stack' : '');
+    const meta = parent.notifTime
+      ? `<div class="task-meta">🔔 ${parent.notifTime}</div>`
+      : '';
+    div.innerHTML = `<div style="flex:1"><span class="task-text">${parent.text}</span>${meta}</div><button class="bin-btn" onclick="removeTask('${key}','${parent.id}',event)">🗑</button>`;
+    div.addEventListener('click', e => { if (!e.target.classList.contains('bin-btn')) toggleTask(key, parent.id); });
+    block.appendChild(div);
+
+    // Stack children
+    if (hasChildren) {
+      const childWrap = document.createElement('div');
+      childWrap.className = 'stack-children';
+      children.forEach(child => {
+        const cdiv = document.createElement('div');
+        cdiv.className = 'stack-child' + (child.done ? ' done' : '');
+        cdiv.innerHTML = `<span class="stack-child-text">${child.text}</span><button class="bin-btn" onclick="removeTask('${key}','${child.id}',event)">🗑</button>`;
+        cdiv.addEventListener('click', e => { if (!e.target.classList.contains('bin-btn')) toggleTask(key, child.id); });
+        childWrap.appendChild(cdiv);
+      });
+      block.appendChild(childWrap);
+    }
+
+    containerEl.appendChild(block);
   });
 }
 
+function renderToday() {
+  renderList(document.getElementById('taskList'), todayKey());
+}
+
 function toggleTask(key, id) {
-  const t = tasks[key] && tasks[key].find(x => x.id === id);
-  if (t) { t.done = !t.done; save(); if (key === todayKey()) renderToday(); else renderCalTasks(); }
+  const t = (tasks[key] || []).find(x => x.id === id);
+  if (!t) return;
+  t.done = !t.done; save();
+  if (key === todayKey()) renderToday(); else renderCalTasks();
 }
 
 function removeTask(key, id, e) {
   e.stopPropagation();
-  tasks[key] = (tasks[key] || []).filter(x => x.id !== id);
+  // Also remove any children stacked onto this task
+  tasks[key] = (tasks[key] || []).filter(x => x.id !== id && x.stackedOnto !== id);
   save();
   if (key === todayKey()) renderToday(); else renderCalTasks();
-  if (calSelectedDate) renderCalGrid();
+  if (typeof calSelectedDate !== 'undefined') renderCalGrid();
 }
 
-// ===== ADD MODAL =====
-let addingForDate = null;
+// ===== SETTINGS =====
+function toggleSettings() {
+  const d = document.getElementById('settingsDrawer');
+  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
 
+// ===== MODALS =====
+let addingForDate = null;
+let stackingForDate = null;
+let selectedStackId = null;
+let parsedTime = null; // currently parsed time in add modal
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function handleOverlayClick(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+
+// -- ADD --
 function openAddModal(forDate) {
   addingForDate = forDate;
-  ['inp_activity','inp_time','inp_location'].forEach(id => document.getElementById(id).value = '');
+  parsedTime = null;
+  document.getElementById('inp_activity').value = '';
+  document.getElementById('inp_time').value = '';
+  document.getElementById('inp_location').value = '';
   document.getElementById('addPreview').textContent = 'Your intention will appear here…';
+  document.getElementById('timeHint').style.display = 'block';
+  document.getElementById('timeDetected').style.display = 'none';
   document.getElementById('addModal').classList.add('open');
+  requestNotifPermission();
   setTimeout(() => document.getElementById('inp_activity').focus(), 300);
 }
 
-function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+function onTimeInput() {
+  const raw = document.getElementById('inp_time').value;
+  const hint = document.getElementById('timeHint');
+  const detected = document.getElementById('timeDetected');
+  parsedTime = parseSmartTime(raw);
+  if (raw.trim() === '') {
+    hint.style.display = 'block';
+    detected.style.display = 'none';
+  } else if (parsedTime) {
+    hint.style.display = 'none';
+    detected.style.display = 'block';
+    detected.textContent = '✓ Detected: ' + timeToDisplay(parsedTime);
+  } else {
+    hint.style.display = 'none';
+    detected.style.display = 'block';
+    detected.style.color = '#b05040';
+    detected.textContent = 'Hmm, couldn\'t read that time';
+  }
+  if (parsedTime) detected.style.color = '#3a7a4a';
+  updatePreview();
+}
 
-function handleOverlayClick(e) { if (e.target === e.currentTarget) closeAddModal(); }
-
-function buildSentence(a, t, l) {
+function buildSentence(a, parsedT, l) {
   if (!a) return '';
   let parts = ['I will', a];
-  if (t) parts.push('at ' + t);
+  if (parsedT) parts.push('at ' + timeToDisplay(parsedT));
   if (l) parts.push(l.match(/^(on|at|in|by)\s/i) ? l : 'at ' + l);
   return parts.join(' ') + '.';
 }
 
 function updatePreview() {
-  const a = document.getElementById('inp_activity').value.trim();
-  const t = document.getElementById('inp_time').value.trim();
-  const l = document.getElementById('inp_location').value.trim();
-  const s = buildSentence(a, t, l);
+  const s = buildSentence(
+    document.getElementById('inp_activity').value.trim(),
+    parsedTime,
+    document.getElementById('inp_location').value.trim()
+  );
   document.getElementById('addPreview').textContent = s || 'Your intention will appear here…';
 }
 
 function confirmAdd() {
   const a = document.getElementById('inp_activity').value.trim();
-  const t = document.getElementById('inp_time').value.trim();
   const l = document.getElementById('inp_location').value.trim();
   if (!a) { document.getElementById('inp_activity').focus(); return; }
-  const text = buildSentence(a, t, l);
+  const text = buildSentence(a, parsedTime, l);
   const key = addingForDate || todayKey();
-  getOrCreate(key).push({ id: Date.now().toString() + Math.floor(Math.random()*1000), text, done: false });
+  const task = { id: uid(), text, done: false };
+  if (parsedTime) {
+    task.notifTime = timeToDisplay(parsedTime); // display string e.g. "8:00 am"
+    task.notifHHMM = timeToHHMM(parsedTime);   // "HH:MM" for scheduling
+  }
+  getOrCreate(key).push(task);
   save();
-  closeAddModal();
-  if (key === todayKey()) renderToday();
-  else { renderCalTasks(); renderCalGrid(); }
+  if (parsedTime && key === todayKey()) scheduleNotification(text, task.notifHHMM);
+  closeModal('addModal');
+  if (key === todayKey()) renderToday(); else { renderCalTasks(); renderCalGrid(); }
   showToast('Activity added ✓');
+}
+
+// -- STACK --
+function openStackModal(forDate) {
+  stackingForDate = forDate;
+  selectedStackId = null;
+  document.getElementById('stk_activity').value = '';
+  document.getElementById('stk_location').value = '';
+  document.getElementById('stackPreview').textContent = 'Preview will appear here…';
+
+  const key = forDate || todayKey();
+  // Only show non-stacked (parent) tasks
+  const parents = (tasks[key] || []).filter(t => !t.stackedOnto);
+  const picker = document.getElementById('stackPickerList');
+  picker.innerHTML = '';
+
+  if (!parents.length) {
+    picker.innerHTML = '<div style="font-size:0.85rem;color:var(--muted-text);font-style:italic;padding:6px 2px;">Add at least one activity first, then stack onto it.</div>';
+  } else {
+    parents.forEach(task => {
+      const div = document.createElement('div');
+      div.className = 'stack-option';
+      div.textContent = task.text;
+      div.onclick = () => {
+        document.querySelectorAll('.stack-option').forEach(o => o.classList.remove('selected'));
+        div.classList.add('selected');
+        selectedStackId = task.id;
+        updateStackPreview();
+      };
+      picker.appendChild(div);
+    });
+  }
+
+  document.getElementById('stackModal').classList.add('open');
+  setTimeout(() => document.getElementById('stk_activity').focus(), 300);
+}
+
+function updateStackPreview() {
+  const a = document.getElementById('stk_activity').value.trim();
+  const l = document.getElementById('stk_location').value.trim();
+  if (!a) { document.getElementById('stackPreview').textContent = 'Preview will appear here…'; return; }
+  const loc = l ? (l.match(/^(on|at|in|by)\s/i) ? l : 'in ' + l) : '';
+  document.getElementById('stackPreview').textContent = `also ${a}${loc ? ' ' + loc : ''}.`;
+}
+
+function confirmStack() {
+  const a = document.getElementById('stk_activity').value.trim();
+  const l = document.getElementById('stk_location').value.trim();
+  if (!a) { document.getElementById('stk_activity').focus(); return; }
+  if (!selectedStackId) { showToast('Please select an activity to stack onto'); return; }
+  const loc = l ? (l.match(/^(on|at|in|by)\s/i) ? l : 'in ' + l) : '';
+  const text = `${a}${loc ? ' ' + loc : ''}`;
+  const key = stackingForDate || todayKey();
+  getOrCreate(key).push({ id: uid(), text, done: false, stackedOnto: selectedStackId });
+  save();
+  closeModal('stackModal');
+  if (key === todayKey()) renderToday(); else { renderCalTasks(); renderCalGrid(); }
+  showToast('Stacked ✓');
 }
 
 // ===== REPEAT TOMORROW =====
@@ -416,12 +684,26 @@ function repeatTomorrow() {
   const d = new Date(); d.setDate(d.getDate() + 1);
   const tmKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const existing = getOrCreate(tmKey);
+  // Map old IDs to new IDs for stacking relationships
+  const idMap = {};
   list.forEach(t => {
-    if (!existing.find(e => e.text === t.text))
-      existing.push({ id: Date.now().toString() + Math.random(), text: t.text, done: false });
+    if (!existing.find(e => e.text === t.text)) {
+      const newId = uid();
+      idMap[t.id] = newId;
+      existing.push({ id: newId, text: t.text, done: false,
+        stackedOnto: t.stackedOnto ? null : undefined // resolve below
+      });
+    }
+  });
+  // Resolve stackedOnto with new IDs
+  existing.forEach(t => {
+    const orig = list.find(o => o.text === t.text);
+    if (orig && orig.stackedOnto && idMap[orig.stackedOnto]) {
+      t.stackedOnto = idMap[orig.stackedOnto];
+    }
   });
   save();
-  showToast("Repeated to tomorrow ✓");
+  showToast('Repeated to tomorrow ✓');
 }
 
 // ===== CALENDAR =====
@@ -470,8 +752,7 @@ function renderCalGrid() {
   for (let d = 1; d <= daysInMonth; d++) {
     const key = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const el = document.createElement('div');
-    el.className = 'cal-cell';
-    el.textContent = d;
+    el.className = 'cal-cell'; el.textContent = d;
     if (key === todayStr) el.classList.add('today');
     if (key === calSelectedDate) el.classList.add('selected');
     if (tasks[key] && tasks[key].length) el.classList.add('has-tasks');
@@ -487,23 +768,11 @@ function renderCalTasks() {
   const isToday = calSelectedDate === todayKey();
   document.getElementById('calSelectedLabel').textContent =
     isToday ? `Today — ${d} ${months[m-1]}` : `${d} ${months[m-1]} ${y}`;
-  const list = getOrCreate(calSelectedDate);
-  const el = document.getElementById('calTaskList');
-  el.innerHTML = '';
-  if (!list.length) {
-    el.innerHTML = '<div class="empty-state">Nothing planned for this day.</div>';
-  } else {
-    list.forEach(task => {
-      const div = document.createElement('div');
-      div.className = 'task-item' + (task.done ? ' done' : '');
-      div.innerHTML = `<span class="task-text">${task.text}</span><button class="bin-btn" onclick="removeTask('${calSelectedDate}','${task.id}',event)">🗑</button>`;
-      div.addEventListener('click', (e) => { if (!e.target.classList.contains('bin-btn')) toggleTask(calSelectedDate, task.id); });
-      el.appendChild(div);
-    });
-  }
+  renderList(document.getElementById('calTaskList'), calSelectedDate);
   document.getElementById('calAddBtnWrap').innerHTML =
     `<div class="bottom-actions" style="margin-top:14px;">
       <button class="btn primary" onclick="openAddModal('${calSelectedDate}')">+ Add activity</button>
+      <button class="btn" onclick="openStackModal('${calSelectedDate}')">⊕ Stack</button>
     </div>`;
 }
 
@@ -515,38 +784,28 @@ function exportData() {
   const d = new Date();
   a.href = url;
   a.download = `notebook-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  a.click(); URL.revokeObjectURL(url);
   showToast('Backup downloaded ✓');
 }
 
 function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+  const file = event.target.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = async (e) => {
+  reader.onload = async e => {
     try {
-      const imported = JSON.parse(e.target.result);
-      // merge — imported data takes precedence
-      tasks = { ...tasks, ...imported };
-      await save();
-      renderToday();
+      tasks = { ...tasks, ...JSON.parse(e.target.result) };
+      await save(); renderToday();
       showToast('Backup restored ✓');
-    } catch(err) {
-      showToast('Could not read backup file');
-    }
+    } catch(err) { showToast('Could not read backup file'); }
   };
-  reader.readAsText(file);
-  event.target.value = '';
+  reader.readAsText(file); event.target.value = '';
 }
 
 // ===== SERVICE WORKER =====
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 // ===== INIT =====
-loadTasks().then(() => renderToday());
+loadTasks().then(() => { renderToday(); rescheduleAllNotifications(); });
 </script>
 </body>
 </html>
