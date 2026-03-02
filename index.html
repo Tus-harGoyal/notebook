@@ -476,7 +476,14 @@ function renderList(containerEl, key) {
   const parents = list.filter(t => !t.stackedOnto);
   const orphans = list.filter(t => t.stackedOnto && !list.find(p => p.id === t.stackedOnto));
 
-  [...parents, ...orphans].forEach(parent => {
+  // Sort by time — timed tasks first (ascending), untimed at the bottom
+  const toMins = t => {
+    if (!t.notifHHMM) return Infinity;
+    const [h, m] = t.notifHHMM.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  [...parents, ...orphans].sort((a, b) => toMins(a) - toMins(b)).forEach(parent => {
     const children = list.filter(t => t.stackedOnto === parent.id);
     const block = document.createElement('div');
     block.className = 'task-block';
